@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#e8ff47">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TrainSmart">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>TrainSmart – Antoine</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0e;
+    --surface: #161616;
+    --card: #1c1c1c;
+    --accent: #e8ff47;
+    --accent2: #ff6b35;
+    --text: #f0f0f0;
+    --muted: #666;
+    --border: #2a2a2a;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.6;
+    min-height: 100vh;
+    padding-bottom: calc(70px + var(--safe-bottom));
+  }
+
+  /* ── NAV BAS ── */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: calc(60px + var(--safe-bottom));
+    padding-bottom: var(--safe-bottom);
+    background: #111;
+    border-top: 1px solid var(--border);
+    display: flex;
+    z-index: 100;
+  }
+
+  .nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: color 0.2s;
+    padding-top: 8px;
+  }
+
+  .nav-btn.active { color: var(--accent); }
+  .nav-btn .icon { font-size: 20px; line-height: 1; }
+
+  /* ── PAGES ── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── HEADER ── */
+  header {
+    padding: calc(var(--safe-top) + 36px) 24px 28px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 280px; height: 280px;
+    background: radial-gradient(circle, rgba(232,255,71,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--accent);
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 56px;
+    line-height: 0.9;
+    color: var(--text);
+  }
+
+  h1 span { color: var(--accent); }
+  .subtitle { margin-top: 10px; color: var(--muted); font-size: 13px; }
+
+  /* ── PLANNING SEMAINE ── */
+  .week-grid {
+    padding: 20px;
+    display: grid;
+    gap: 10px;
+  }
+
+  .week-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+
+  .week-row.today {
+    border-color: var(--accent);
+    background: rgba(232,255,71,0.04);
+  }
+
+  .week-day {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 15px;
+    letter-spacing: 1px;
+    color: var(--muted);
+    width: 36px;
+    flex-shrink: 0;
+  }
+
+  .week-row.today .week-day { color: var(--accent); }
+
+  .week-info { flex: 1; }
+  .week-title { font-size: 13px; font-weight: 500; color: var(--text); }
+  .week-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+  .week-tag {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .tag-upper { background: rgba(232,255,71,0.1); color: var(--accent); }
+  .tag-plyo { background: rgba(255,107,53,0.1); color: var(--accent2); }
+  .tag-full { background: rgba(100,180,255,0.1); color: #64b4ff; }
+  .tag-rest { background: rgba(120,120,120,0.1); color: var(--muted); }
+  .tag-volley { background: rgba(180,100,255,0.1); color: #b464ff; }
+
+  /* ── SÉANCES ── */
+  .section-pad { padding: 0 20px 16px; }
+
+  .page-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    padding: 20px 20px 10px;
+  }
+
+  .day-card {
+    margin: 0 20px 14px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .day-header {
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .day-left { display: flex; align-items: center; gap: 12px; }
+
+  .day-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--accent);
+    line-height: 1;
+    width: 24px;
+  }
+
+  .day-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 17px;
+    letter-spacing: 1px;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .day-sub {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 2px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .chevron {
+    color: var(--muted);
+    font-size: 16px;
+    transition: transform 0.3s;
+    flex-shrink: 0;
+  }
+
+  .day-card.open .chevron { transform: rotate(180deg); }
+
+  .day-body {
+    display: none;
+    padding: 0 16px 16px;
+  }
+
+  .day-card.open .day-body { display: block; }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    margin: 16px 0 8px;
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  thead tr { border-bottom: 1px solid var(--border); }
+  th {
+    text-align: left;
+    padding: 5px 6px;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  td {
+    padding: 8px 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+
+  .ex-name { font-weight: 500; color: var(--text); font-size: 13px; }
+  .ex-note { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .sets { color: var(--accent); font-weight: 500; font-size: 12px; }
+  .rest { color: var(--muted); font-size: 11px; }
+
+  .note-box {
+    margin-top: 14px;
+    padding: 10px 12px;
+    background: rgba(232,255,71,0.04);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    font-size: 11px;
+    color: #aaa;
+    line-height: 1.7;
+  }
+  .note-box b { color: var(--accent); font-weight: 500; }
+
+  /* ── NUTRITION ── */
+  .nutr-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 0 20px 20px;
+  }
+
+  .nutr-item {
+    padding: 14px;
+    background: var(--card);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .nutr-item strong {
+    display: block;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 5px;
+    font-weight: 400;
+  }
+
+  .nutr-icon { font-size: 20px; margin-bottom: 6px; display: block; }
+
+  /* ── INSTALL BANNER ── */
+  #install-banner {
+    display: none;
+    margin: 16px 20px 0;
+    padding: 12px 14px;
+    background: rgba(232,255,71,0.06);
+    border: 1px solid rgba(232,255,71,0.2);
+    border-radius: 10px;
+    font-size: 12px;
+    color: #ccc;
+    align-items: center;
+    gap: 12px;
+  }
+
+  #install-banner.show { display: flex; }
+
+  #install-btn {
+    margin-left: auto;
+    padding: 6px 14px;
+    background: var(--accent);
+    color: #0e0e0e;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    flex-shrink: 0;
+  }
+
+  .goals {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .goal-chip {
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 500;
+    border: 1px solid;
+  }
+
+  .goal-chip.green { border-color: var(--accent); color: var(--accent); background: rgba(232,255,71,0.05); }
+  .goal-chip.orange { border-color: var(--accent2); color: var(--accent2); background: rgba(255,107,53,0.05); }
+
+  .page-header {
+    padding: calc(var(--safe-top) + 28px) 20px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .page-header h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 1px;
+  }
+
+  .page-header p { font-size: 12px; color: var(--muted); margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ PAGE : ACCUEIL ══════════════ -->
+<div class="page active" id="page-home">
+  <header>
+    <span class="label">PROGRAMME PERSONNEL</span>
+    <h1>TRAIN<br><span>SMART</span></h1>
+    <p class="subtitle">4 jours · Maison · Antoine</p>
+  </header>
+
+  <div id="install-banner">
+    <span>📲 Installe l'app sur ton écran d'accueil</span>
+    <button id="install-btn">Installer</button>
+  </div>
+
+  <div class="goals">
+    <span class="goal-chip green">🏐 Détente</span>
+    <span class="goal-chip green">💪 Haut du corps</span>
+    <span class="goal-chip orange">🔥 Bodyfat</span>
+    <span class="goal-chip green">✅ 15 tractions</span>
+  </div>
+
+  <div class="page-title">PLANNING SEMAINE</div>
+  <div class="week-grid">
+    <div class="week-row" id="row-lun">
+      <div class="week-day">LUN</div>
+      <div class="week-info">
+        <div class="week-title">Tirage — Dos & Biceps</div>
+        <div class="week-sub">Tractions · Rows · Curl</div>
+      </div>
+      <span class="week-tag tag-upper">UPPER</span>
+    </div>
+    <div class="week-row" id="row-mar">
+      <div class="week-day">MAR</div>
+      <div class="week-info">
+        <div class="week-title">🏐 Volley</div>
+        <div class="week-sub">Entraînement club</div>
+      </div>
+      <span class="week-tag tag-volley">VOLLEY</span>
+    </div>
+    <div class="week-row" id="row-mer">
+      <div class="week-day">MER</div>
+      <div class="week-info">
+        <div class="week-title">Plyométrie + Jambes</div>
+        <div class="week-sub">Jump training · Détente</div>
+      </div>
+      <span class="week-tag tag-plyo">PLYO</span>
+    </div>
+    <div class="week-row" id="row-jeu">
+      <div class="week-day">JEU</div>
+      <div class="week-info">
+        <div class="week-title">Repos actif</div>
+        <div class="week-sub">Mobilité · Marche</div>
+      </div>
+      <span class="week-tag tag-rest">REPOS</span>
+    </div>
+    <div class="week-row" id="row-ven">
+      <div class="week-day">VEN</div>
+      <div class="week-info">
+        <div class="week-title">Poussée — Poitrine & Épaules</div>
+        <div class="week-sub">Dips · Pompes · Pike push-up</div>
+      </div>
+      <span class="week-tag tag-upper">UPPER</span>
+    </div>
+    <div class="week-row" id="row-sam">
+      <div class="week-day">SAM</div>
+      <div class="week-info">
+        <div class="week-title">Full Body + Core</div>
+        <div class="week-sub">Circuit · Gainage</div>
+      </div>
+      <span class="week-tag tag-full">FULL</span>
+    </div>
+    <div class="week-row" id="row-dim">
+      <div class="week-day">DIM</div>
+      <div class="week-info">
+        <div class="week-title">Repos complet</div>
+        <div class="week-sub">Récupération</div>
+      </div>
+      <span class="week-tag tag-rest">REPOS</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ PAGE : SÉANCES ══════════════ -->
+<div class="page" id="page-seances">
+  <div class="page-header">
+    <h2>SÉANCES</h2>
+    <p>Appuie sur une séance pour voir le détail</p>
+  </div>
+
+  <!-- JOUR 1 -->
+  <div class="page-title" style="padding-top:16px">LUNDI</div>
+  <div class="day-card" id="d1">
+    <div class="day-header" onclick="toggle('d1')">
+      <div class="day-left">
+        <div class="day-num">1</div>
+        <div>
+          <div class="day-title">TIRAGE — DOS & BICEPS</div>
+          <div class="day-sub">Tractions · Rows · Curl</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="week-tag tag-upper">UPPER</span>
+        <span class="chevron">▾</span>
+      </div>
+    </div>
+    <div class="day-body">
+      <div class="section-title">ÉCHAUFFEMENT — 5 min</div>
+      <p style="font-size:12px;color:var(--muted)">Rotations épaules · Dislocations · 10 scapular pulls</p>
+      <div class="section-title">TRAVAIL PRINCIPAL</div>
+      <table>
+        <thead><tr><th>Exercice</th><th>Séries</th><th>Repos</th></tr></thead>
+        <tbody>
+          <tr><td><div class="ex-name">Tractions pronation</div><div class="ex-note">Descente contrôlée 3s</div></td><td><span class="sets">5×max</span></td><td><span class="rest">2 min</span></td></tr>
+          <tr><td><div class="ex-name">Chin-ups (supination)</div><div class="ex-note">Accentue le biceps</div></td><td><span class="sets">4×max</span></td><td><span class="rest">90 s</span></td></tr>
+          <tr><td><div class="ex-name">Negative pull-ups</div><div class="ex-note">Descente 5–7s</div></td><td><span class="sets">3×5</span></td><td><span class="rest">2 min</span></td></tr>
+          <tr><td><div class="ex-name">Rows australiens</div><div class="ex-note">Table ou barre basse</div></td><td><span class="sets">4×12</span></td><td><span class="rest">90 s</span></td></tr>
+          <tr><td><div class="ex-name">Curl biceps 10kg</div><div class="ex-note">Alterné, supination en haut</div></td><td><span class="sets">3×12</span></td><td><span class="rest">60 s</span></td></tr>
+        </tbody>
+      </table>
+      <div class="section-title">FINISHER</div>
+      <p style="font-size:12px;color:var(--muted)">Corde à sauter — 10 min continu</p>
+      <div class="note-box"><b>Objectif tractions :</b> Note le total de reps sur les 5 séries. +1 rep total chaque semaine. Objectif = 15 reps sur 1 série.</div>
+    </div>
+  </div>
+
+  <!-- JOUR 2 -->
+  <div class="page-title">MERCREDI</div>
+  <div class="day-card" id="d2">
+    <div class="day-header" onclick="toggle('d2')">
+      <div class="day-left">
+        <div class="day-num">2</div>
+        <div>
+          <div class="day-title">PLYOMÉTRIE + JAMBES</div>
+          <div class="day-sub">Détente verticale · Jump training</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="week-tag tag-plyo">PLYO</span>
+        <span class="chevron">▾</span>
+      </div>
+    </div>
+    <div class="day-body">
+      <div class="section-title">ÉCHAUFFEMENT — 7 min</div>
+      <p style="font-size:12px;color:var(--muted)">Jumping jacks 2 min · Squat dynamique · Montées genoux · Hip flexor</p>
+      <div class="section-title">TRAVAIL PRINCIPAL</div>
+      <table>
+        <thead><tr><th>Exercice</th><th>Séries</th><th>Repos</th></tr></thead>
+        <tbody>
+          <tr><td><div class="ex-name">Squat jump</div><div class="ex-note">Explosion max, atterrissage souple</div></td><td><span class="sets">5×5</span></td><td><span class="rest">2 min</span></td></tr>
+          <tr><td><div class="ex-name">Box jump</div><div class="ex-note">Chaise/lit/step, qualité > quantité</div></td><td><span class="sets">4×5</span></td><td><span class="rest">2 min</span></td></tr>
+          <tr><td><div class="ex-name">Depth drop → rebond</div><div class="ex-note">Descend d'une marche, rebond explosif</div></td><td><span class="sets">3×5</span></td><td><span class="rest">2 min</span></td></tr>
+          <tr><td><div class="ex-name">Bulgarian split squat</div><div class="ex-note">Pied arrière surélevé, 10kg</div></td><td><span class="sets">3×8/jambe</span></td><td><span class="rest">90 s</span></td></tr>
+          <tr><td><div class="ex-name">Calf raises</div><div class="ex-note">Lent en montée, contrôlé en descente</div></td><td><span class="sets">4×20</span></td><td><span class="rest">60 s</span></td></tr>
+        </tbody>
+      </table>
+      <div class="note-box"><b>Clé :</b> Sauts en début de séance, corps frais. Contact au sol = rapide et explosif. Repos complet entre séries.</div>
+    </div>
+  </div>
+
+  <!-- JOUR 3 -->
+  <div class="page-title">VENDREDI</div>
+  <div class="day-card" id="d4">
+    <div class="day-header" onclick="toggle('d4')">
+      <div class="day-left">
+        <div class="day-num">3</div>
+        <div>
+          <div class="day-title">POUSSÉE — POITRINE & ÉPAULES</div>
+          <div class="day-sub">Dips · Pompes · Pike push-up</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="week-tag tag-upper">UPPER</span>
+        <span class="chevron">▾</span>
+      </div>
+    </div>
+    <div class="day-body">
+      <div class="section-title">ÉCHAUFFEMENT — 5 min</div>
+      <p style="font-size:12px;color:var(--muted)">Arm circles · 10 pompes lentes · Band pull-aparts</p>
+      <div class="section-title">TRAVAIL PRINCIPAL</div>
+      <table>
+        <thead><tr><th>Exercice</th><th>Séries</th><th>Repos</th></tr></thead>
+        <tbody>
+          <tr><td><div class="ex-name">Dips (buste ~30° en avant)</div><div class="ex-note">Active la poitrine basse</div></td><td><span class="sets">5×max</span></td><td><span class="rest">2 min</span></td></tr>
+          <tr><td><div class="ex-name">Pompes déclinées</div><div class="ex-note">Pieds sur chaise, poitrine haute</div></td><td><span class="sets">4×12–15</span></td><td><span class="rest">90 s</span></td></tr>
+          <tr><td><div class="ex-name">Pike push-ups</div><div class="ex-note">Position inversée, cible épaules</div></td><td><span class="sets">4×10</span></td><td><span class="rest">90 s</span></td></tr>
+          <tr><td><div class="ex-name">Élévations latérales 10kg</div><div class="ex-note">Lent, coude légèrement fléchi</div></td><td><span class="sets">4×12–15</span></td><td><span class="rest">60 s</span></td></tr>
+          <tr><td><div class="ex-name">Dips triceps étroits</div><div class="ex-note">Bras serrés, focus triceps</div></td><td><span class="sets">3×max</span></td><td><span class="rest">90 s</span></td></tr>
+        </tbody>
+      </table>
+      <div class="section-title">FINISHER</div>
+      <p style="font-size:12px;color:var(--muted)">Corde à sauter intervals — 30s sprint / 30s repos × 8</p>
+    </div>
+  </div>
+
+  <!-- JOUR 4 -->
+  <div class="page-title">SAMEDI</div>
+  <div class="day-card" id="d5">
+    <div class="day-header" onclick="toggle('d5')">
+      <div class="day-left">
+        <div class="day-num">4</div>
+        <div>
+          <div class="day-title">FULL BODY + CORE</div>
+          <div class="day-sub">Circuit · Gainage · Cardio</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="week-tag tag-full">FULL</span>
+        <span class="chevron">▾</span>
+      </div>
+    </div>
+    <div class="day-body">
+      <div class="section-title">CIRCUIT — 4 tours</div>
+      <table>
+        <thead><tr><th>Exercice</th><th>Reps</th><th>Repos</th></tr></thead>
+        <tbody>
+          <tr><td><div class="ex-name">Traction pronation</div></td><td><span class="sets">Max</span></td><td><span class="rest">—</span></td></tr>
+          <tr><td><div class="ex-name">Dips</div></td><td><span class="sets">Max</span></td><td><span class="rest">—</span></td></tr>
+          <tr><td><div class="ex-name">Squat jump</div></td><td><span class="sets">8</span></td><td><span class="rest">—</span></td></tr>
+          <tr><td><div class="ex-name">Planche</div></td><td><span class="sets">45–60s</span></td><td><span class="rest">—</span></td></tr>
+          <tr><td><div class="ex-name">Mountain climbers</div></td><td><span class="sets">30s</span></td><td><span class="rest">2 min</span></td></tr>
+        </tbody>
+      </table>
+      <div class="section-title">CORE ISOLATION</div>
+      <table>
+        <thead><tr><th>Exercice</th><th>Séries</th></tr></thead>
+        <tbody>
+          <tr><td><div class="ex-name">Leg raises (barre de traction)</div></td><td><span class="sets">4×12</span></td></tr>
+          <tr><td><div class="ex-name">Hollow body hold</div></td><td><span class="sets">3×30s</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div style="height:8px"></div>
+</div>
+
+<!-- ══════════════ PAGE : NUTRITION ══════════════ -->
+<div class="page" id="page-nutrition">
+  <div class="page-header">
+    <h2>NUTRITION</h2>
+    <p>Principes clés pour ton objectif</p>
+  </div>
+
+  <div class="page-title" style="padding-top:16px">MACROS & RÈGLES</div>
+  <div class="nutr-grid">
+    <div class="nutr-item">
+      <span class="nutr-icon">🥩</span>
+      <strong>Protéines</strong>
+      1.8–2g / kg de poids corporel par jour. Priorité absolue.
+    </div>
+    <div class="nutr-item">
+      <span class="nutr-icon">📉</span>
+      <strong>Déficit calorique</strong>
+      ~200–300 kcal/j sous ta maintenance. Pas plus.
+    </div>
+    <div class="nutr-item">
+      <span class="nutr-icon">🚫</span>
+      <strong>À réduire</strong>
+      Sucres rapides, alcool, ultra-transformés.
+    </div>
+    <div class="nutr-item">
+      <span class="nutr-icon">⏱️</span>
+      <strong>Timing</strong>
+      Repas protéiné dans les 2h post-séance.
+    </div>
+    <div class="nutr-item">
+      <span class="nutr-icon">💧</span>
+      <strong>Hydratation</strong>
+      2–3L d'eau/jour minimum. Plus les jours d'entraînement.
+    </div>
+    <div class="nutr-item">
+      <span class="nutr-icon">😴</span>
+      <strong>Sommeil</strong>
+      7–9h. Récupération = 50% des résultats.
+    </div>
+  </div>
+
+  <div class="page-title">SOURCES DE PROTÉINES</div>
+  <div style="padding: 0 20px 20px;">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+      <table>
+        <thead><tr><th>Aliment</th><th>Protéines / 100g</th></tr></thead>
+        <tbody>
+          <tr><td><div class="ex-name">Blanc de poulet</div></td><td><span class="sets">~31g</span></td></tr>
+          <tr><td><div class="ex-name">Œufs entiers</div></td><td><span class="sets">~13g</span></td></tr>
+          <tr><td><div class="ex-name">Thon en boîte</div></td><td><span class="sets">~25g</span></td></tr>
+          <tr><td><div class="ex-name">Fromage blanc 0%</div></td><td><span class="sets">~8g</span></td></tr>
+          <tr><td><div class="ex-name">Skyr</div></td><td><span class="sets">~11g</span></td></tr>
+          <tr><td><div class="ex-name">Whey (si tu en as)</div></td><td><span class="sets">~25g / dose</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ NAV ══════════════ -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" id="nav-home" onclick="showPage('home')">
+    <span class="icon">🏠</span>
+    <span>Accueil</span>
+  </button>
+  <button class="nav-btn" id="nav-seances" onclick="showPage('seances')">
+    <span class="icon">💪</span>
+    <span>Séances</span>
+  </button>
+  <button class="nav-btn" id="nav-nutrition" onclick="showPage('nutrition')">
+    <span class="icon">🥗</span>
+    <span>Nutrition</span>
+  </button>
+</nav>
+
+<script>
+  // Navigation
+  function showPage(name) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    document.getElementById('nav-' + name).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  // Toggle day cards
+  function toggle(id) {
+    document.getElementById(id).classList.toggle('open');
+  }
+
+  // Highlight today
+  const days = ['dim','lun','mar','mer','jeu','ven','sam'];
+  const today = days[new Date().getDay()];
+  const row = document.getElementById('row-' + today);
+  if (row) row.classList.add('today');
+
+  // PWA Install
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('install-banner').classList.add('show');
+  });
+
+  document.getElementById('install-btn').addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    document.getElementById('install-banner').classList.remove('show');
+  });
+
+  // Service Worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+</script>
+</body>
+</html>
